@@ -1,1 +1,646 @@
-hola
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>¡A Lavar los Dientes!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-color: #87CEEB;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    #game-container {
+      width: 100%;
+      max-width: 500px;
+      height: 100%;
+      max-height: 900px;
+      background: white;
+      position: relative;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    h1, h2 {
+      color: #ff6b6b;
+      margin-bottom: 20px;
+      font-size: 2rem;
+      text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 0 3px 0 #ccc;
+      z-index: 10;
+      font-weight: 900;
+    }
+
+    .character {
+      font-size: 8rem;
+      margin: 20px;
+    }
+
+    .character.jump {
+      animation: jumpBounce 1s infinite alternate;
+    }
+
+    @keyframes jumpBounce {
+      0% { transform: translateY(0) scale(1.1); }
+      100% { transform: translateY(-30px) scale(0.9); }
+    }
+
+    .main-btn, .next-btn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.5rem;
+      font-weight: 900;
+      font-family: 'Nunito', sans-serif;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 8px 0 #2E7D32;
+      transition: transform 0.1s, box-shadow 0.1s;
+      margin-top: auto;
+      margin-bottom: 30px;
+    }
+    .main-btn:active, .next-btn:active {
+      transform: translateY(8px);
+      box-shadow: 0 0 0 #2E7D32;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .sink-area, .paste-area, .rinse-area, .mouth-area {
+      position: relative;
+      flex-grow: 1;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .faucet, .toothpaste, .mouth-open {
+      font-size: 6rem;
+      margin-bottom: 50px;
+      cursor: pointer;
+    }
+
+    .water-stream {
+      width: 20px;
+      height: 150px;
+      background-color: #4fc3f7;
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: flowDown 0.5s infinite linear;
+      border-radius: 10px;
+    }
+    @keyframes flowDown {
+      0% { transform: translateX(-50%) translateY(0); }
+      100% { transform: translateX(-50%) translateY(20px); }
+    }
+
+    .toothbrush, .cup {
+      font-size: 5rem;
+      position: absolute;
+      bottom: 20%;
+      z-index: 10;
+    }
+    .draggable {
+      cursor: grab;
+    }
+    .draggable:active {
+      cursor: grabbing;
+    }
+
+    .paste-blob {
+      width: 40px;
+      height: 20px;
+      background-color: #4fc3f7;
+      border-radius: 20px;
+      position: absolute;
+      top: 10px;
+      left: 20px;
+    }
+
+    .teeth-bg, .tongue-bg {
+      font-size: 12rem;
+      position: absolute;
+    }
+
+    canvas {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      border-radius: 20px;
+      cursor: crosshair;
+    }
+
+    .progress-bar-container {
+      width: 80%;
+      height: 20px;
+      background: #eee;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 20px;
+      border: 2px solid #ccc;
+      z-index: 10;
+    }
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: #4caf50;
+      transition: width 0.3s;
+    }
+
+    .emoji-btn {
+      transition: transform 0.2s;
+    }
+    .emoji-btn:active {
+      transform: scale(0.9);
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="screen-start" class="screen active">
+      <h1>¡Hola! Vamos a aprender a lavarnos los dientes</h1>
+      <div class="character">🦷✨</div>
+      <button id="btn-start" class="main-btn">¡A jugar!</button>
+    </div>
+
+    <!-- Escena 1: Lavabo (Mojar cepillo y cerrar llave) -->
+    <div id="screen-sink" class="screen">
+      <h2 id="sink-instruction">Paso 1: Moja tu cepillo</h2>
+      <div class="sink-area">
+        <div id="faucet" class="faucet emoji-btn">🚰</div>
+        <div id="water-stream" class="water-stream hidden"></div>
+        <div id="toothbrush-sink" class="toothbrush draggable">🪥</div>
+      </div>
+      <button id="btn-next-sink" class="next-btn hidden">Siguiente ➡️</button>
+    </div>
+
+    <!-- Escena 2: Pasta dental -->
+    <div id="screen-paste" class="screen">
+      <h2>Paso 3: Ponle pasta a tu cepillo</h2>
+      <div class="paste-area">
+        <div id="toothpaste" class="toothpaste emoji-btn">🧴</div>
+        <div id="toothbrush-paste" class="toothbrush">
+          🪥
+          <div id="paste-blob" class="paste-blob hidden"></div>
+        </div>
+      </div>
+      <button id="btn-next-paste" class="next-btn hidden">Siguiente ➡️</button>
+    </div>
+
+    <!-- Escena 3: Lavar Dientes (Canvas) -->
+    <div id="screen-brush-teeth" class="screen">
+      <h2>Paso 4: ¡Talla tus dientes de arriba hacia abajo y al revés!</h2>
+      <div class="mouth-area">
+        <div class="teeth-bg">👄🦷</div>
+        <canvas id="dirt-canvas-teeth"></canvas>
+      </div>
+      <div class="progress-bar-container"><div id="progress-teeth" class="progress-bar"></div></div>
+      <button id="btn-next-teeth" class="next-btn hidden">Siguiente ➡️</button>
+    </div>
+
+    <!-- Escena 4: Lavar Lengua (Canvas) -->
+    <div id="screen-brush-tongue" class="screen">
+      <h2>Paso 5: ¡Y ahora talla la lengua hacia afuera!</h2>
+      <div class="mouth-area">
+        <div class="tongue-bg">👅</div>
+        <canvas id="dirt-canvas-tongue"></canvas>
+      </div>
+      <div class="progress-bar-container"><div id="progress-tongue" class="progress-bar"></div></div>
+      <button id="btn-next-tongue" class="next-btn hidden">Siguiente ➡️</button>
+    </div>
+
+    <!-- Escena 5: Enjuagar -->
+    <div id="screen-rinse" class="screen">
+      <h2>Paso 6: ¡Enjuaga tu boca con el vasito de agua!</h2>
+      <div class="rinse-area">
+        <div id="cup" class="cup draggable">💧🥛</div>
+        <div id="mouth-rinse" class="mouth-open">👄</div>
+      </div>
+      <button id="btn-next-rinse" class="next-btn hidden">Terminar ➡️</button>
+    </div>
+
+    <!-- Pantalla Final -->
+    <div id="screen-end" class="screen">
+      <h1>¡Felicidades!</h1>
+      <p style="font-size: 1.5rem; color: #555;">Tus dientes están limpios y brillantes.</p>
+      <div class="character jump">🦷✨🎉</div>
+      <button id="btn-restart" class="main-btn">Volver a limpiar</button>
+    </div>
+  </div>
+
+  <script>
+    function speakInstruction(text) {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'es-MX'; 
+        utterance.rate = 0.95;     
+        utterance.pitch = 1.3;    
+        window.speechSynthesis.cancel(); 
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new AudioContext();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    function playSound(type) {
+      if(!audioCtx) return;
+      
+      const osc = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      osc.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      if (type === 'water') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        osc.start();
+        return osc; 
+      } else if (type === 'pop') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+      } else if (type === 'success') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(400, audioCtx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.2);
+        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+      } else if (type === 'scrub') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(100 + Math.random()*50, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+      }
+    }
+
+    function showScreen(id, phrase) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if (phrase) {
+        speakInstruction(phrase);
+      }
+    }
+
+    // ---------- PASO 1 y 2: LAVABO ----------
+    const btnStart = document.getElementById('btn-start');
+    const faucet = document.getElementById('faucet');
+    const waterStream = document.getElementById('water-stream');
+    const tbSink = document.getElementById('toothbrush-sink');
+    const btnNextSink = document.getElementById('btn-next-sink');
+    const sinkInstruction = document.getElementById('sink-instruction');
+
+    let waterOsc = null;
+    let isWaterRunning = false;
+    let brushWet = false;
+
+    btnStart.addEventListener('click', () => {
+        initAudio();
+        playSound('pop');
+        showScreen('screen-sink', "Paso 1: Toca la llave de agua para abrirla, y luego arrastra el cepillo hacia el chorrito.");
+    });
+
+    faucet.addEventListener('click', () => {
+      if (!isWaterRunning && !brushWet) {
+        waterStream.classList.remove('hidden');
+        isWaterRunning = true;
+        waterOsc = playSound('water');
+      } else if (isWaterRunning && brushWet) {
+        waterStream.classList.add('hidden');
+        isWaterRunning = false;
+        if (waterOsc) { waterOsc.stop(); waterOsc = null; }
+        playSound('success');
+        sinkInstruction.innerText = "¡Muy bien! Cuidamos el agua.";
+        speakInstruction("¡Qué bien! Ya cerraste la llave para cuidar el agua. Toca en Siguiente.");
+        btnNextSink.classList.remove('hidden');
+      }
+    });
+
+    makeDraggable(tbSink, (x, y, el) => {
+      if (isWaterRunning && !brushWet) {
+        const waterRect = waterStream.getBoundingClientRect();
+        const tbRect = el.getBoundingClientRect();
+        if (
+          tbRect.left < waterRect.right &&
+          tbRect.right > waterRect.left &&
+          tbRect.top < waterRect.bottom &&
+          tbRect.bottom > waterRect.top
+        ) {
+          brushWet = true;
+          playSound('pop');
+          el.innerText = "🪥💦"; 
+          sinkInstruction.innerText = "Paso 2: ¡Ahora cierra la llave!";
+          speakInstruction("¡Listo! Tu cepillo ya está mojado. Ahora toca la llave para cerrarla y no desperdiciar agüita.");
+          el.style.transform = "translate(0px, 0px)";
+        }
+      } else {
+          el.style.transform = "translate(0px, 0px)";
+      }
+    });
+
+    btnNextSink.addEventListener('click', () => {
+      showScreen('screen-paste', "Paso 3: Toca el tubito de pasta para ponerla en tu cepillo.");
+    });
+
+    // ---------- PASO 3: PASTA ----------
+    const toothpasteBtn = document.getElementById('toothpaste');
+    const pasteBlob = document.getElementById('paste-blob');
+    const btnNextPaste = document.getElementById('btn-next-paste');
+    let hasPaste = false;
+
+    toothpasteBtn.addEventListener('click', () => {
+      if (!hasPaste) {
+        hasPaste = true;
+        pasteBlob.classList.remove('hidden');
+        playSound('pop');
+        speakInstruction("¡Perfecto! Ya tiene pasta. Dale a Siguiente.");
+        btnNextPaste.classList.remove('hidden');
+      }
+    });
+
+    btnNextPaste.addEventListener('click', () => {
+      showScreen('screen-brush-teeth', "Paso 4: ¡Con tu dedito, talla los dientes donde haya comida chatarra para quitarlos!");
+      initCanvas('dirt-canvas-teeth', 'progress-teeth', btnNextTeeth, 250, 150, '#d1c24f', true); 
+    });
+
+    // ---------- PASO 4 y 5: CANVAS SCRATCH-OFF ----------
+    const btnNextTeeth = document.getElementById('btn-next-teeth');
+    const btnNextTongue = document.getElementById('btn-next-tongue');
+
+    btnNextTeeth.addEventListener('click', () => {
+      showScreen('screen-brush-tongue', "Paso 5: ¡Y ahora cepilla la lengua, moviendo el cepillo hacia afuera!");
+      initCanvas('dirt-canvas-tongue', 'progress-tongue', btnNextTongue, 200, 150, '#94b85c', false); 
+    });
+
+    function initCanvas(canvasId, progressId, nextBtn, w, h, color, drawGerms) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      canvas.width = w;
+      canvas.height = h;
+
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, w, h);
+      
+      if (drawGerms) {
+          ctx.fillStyle = '#61540d'; 
+          for(let i=0; i<30; i++){
+            ctx.beginPath();
+            ctx.arc(Math.random()*w, Math.random()*h, Math.random()*5+2, 0, Math.PI*2);
+            ctx.fill();
+          }
+      } else {
+          ctx.fillStyle = '#4c612b'; 
+          for(let i=0; i<30; i++){
+            ctx.beginPath();
+            ctx.arc(Math.random()*w, Math.random()*h, Math.random()*5+2, 0, Math.PI*2);
+            ctx.fill();
+          }
+      }
+
+      let isDrawing = false;
+      let lastX = 0;
+      let lastY = 0;
+      const brushRadius = 25; 
+
+      const totalPixels = w * h;
+      const pixelsToClear = totalPixels * 0.7; 
+      let isDone = false;
+
+      function getMousePos(evt) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+        const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+        return {
+          x: clientX - rect.left,
+          y: clientY - rect.top
+        };
+      }
+
+      function startPos(e) {
+        if(isDone) return;
+        e.preventDefault();
+        isDrawing = true;
+        const pos = getMousePos(e);
+        lastX = pos.x; lastY = pos.y;
+        scrub(pos.x, pos.y);
+      }
+
+      function movePos(e) {
+        if (!isDrawing || isDone) return;
+        e.preventDefault();
+        const pos = getMousePos(e);
+        
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.lineWidth = brushRadius * 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+
+        lastX = pos.x; lastY = pos.y;
+        
+        if(Math.random() > 0.7) playSound('scrub');
+        
+        checkProgress();
+      }
+
+      function endPos(e) {
+        isDrawing = false;
+      }
+
+      function scrub(x, y) {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(x, y, brushRadius, 0, Math.PI * 2, false);
+        ctx.fill();
+        checkProgress();
+      }
+
+      canvas.addEventListener('mousedown', startPos, {passive: false});
+      canvas.addEventListener('mousemove', movePos, {passive: false});
+      canvas.addEventListener('mouseup', endPos);
+      canvas.addEventListener('mouseleave', endPos);
+      
+      canvas.addEventListener('touchstart', startPos, {passive: false});
+      canvas.addEventListener('touchmove', movePos, {passive: false});
+      canvas.addEventListener('touchend', endPos);
+      canvas.addEventListener('touchcancel', endPos);
+
+      function checkProgress() {
+        if(isDone) return;
+        const imageData = ctx.getImageData(0, 0, w, h);
+        const data = imageData.data;
+        let transparentPixels = 0;
+        
+        for (let i = 3; i < data.length; i += 4) {
+          if (data[i] < 128) { 
+            transparentPixels++;
+          }
+        }
+        
+        const percentage = Math.min((transparentPixels / pixelsToClear) * 100, 100);
+        document.getElementById(progressId).style.width = percentage + '%';
+
+        if (percentage >= 100) {
+          isDone = true;
+          playSound('success');
+          nextBtn.classList.remove('hidden');
+          speakInstruction("¡Quedó súper limpio! Toca Siguiente.");
+          ctx.clearRect(0,0,w,h); 
+        }
+      }
+    }
+
+    // ---------- PASO 6: ENJUAGAR ----------
+    const btnNextRinse = document.getElementById('btn-next-rinse');
+    const cup = document.getElementById('cup');
+    const mouthRinse = document.getElementById('mouth-rinse');
+    let isRinsed = false;
+
+    btnNextTongue.addEventListener('click', () => {
+        showScreen('screen-rinse', "Paso 6: ¡Por último, arrastra el vasito de agua a tu boquita para enjuagarte!");
+    });
+
+    makeDraggable(cup, (x, y, el) => {
+      if (!isRinsed) {
+        const mRect = mouthRinse.getBoundingClientRect();
+        const cRect = el.getBoundingClientRect();
+        if (
+          cRect.left < mRect.right && cRect.right > mRect.left &&
+          cRect.top < mRect.bottom && cRect.bottom > mRect.top
+        ) {
+          isRinsed = true;
+          el.innerText = "💧";
+          setTimeout(() => playSound('water'), 100);
+          setTimeout(() => {
+            if(waterOsc) { waterOsc.stop(); waterOsc = null; }
+          }, 1000);
+          
+          el.style.transform = 'translate(' + x + 'px, ' + (y-40) + 'px) rotate(-45deg)'; 
+          setTimeout(() => {
+              speakInstruction("¡A escupir y listo!");
+              btnNextRinse.classList.remove('hidden');
+          }, 1500);
+        }
+      } else {
+          el.style.transform = "translate(0px, 0px)";
+      }
+    });
+
+    btnNextRinse.addEventListener('click', () => {
+      showScreen('screen-end', "¡Wow, lo hiciste genial! ¡Tus dientes están relucientes y eres un campeón!");
+      playSound('success');
+    });
+
+    const btnRestart = document.getElementById('btn-restart');
+    btnRestart.addEventListener('click', () => {
+      location.reload(); 
+    });
+
+    // ---------- UTILIDADES MÉTODOS ARRASTRAR ----------
+    function makeDraggable(element, onDropCheck) {
+      let isDragging = false;
+      let startX, startY;
+      let currentX = 0, currentY = 0;
+      let baseX = 0, baseY = 0;
+
+      function onDown(e) {
+        e.preventDefault();
+        isDragging = true;
+        const evt = e.touches ? e.touches[0] : e;
+        startX = evt.clientX - baseX;
+        startY = evt.clientY - baseY;
+        element.style.zIndex = 1000;
+      }
+      function onMove(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        const evt = e.touches ? e.touches[0] : e;
+        currentX = evt.clientX - startX;
+        currentY = evt.clientY - startY;
+        baseX = currentX;
+        baseY = currentY;
+        element.style.transform = `translate(${currentX}px, ${currentY}px)`;
+      }
+      function onUp(e) {
+        if(!isDragging) return;
+        isDragging = false;
+        element.style.zIndex = 10;
+        if(onDropCheck) onDropCheck(currentX, currentY, element);
+        else element.style.transform = "translate(0px, 0px)";
+        baseX = 0; baseY = 0; 
+      }
+
+      element.addEventListener('mousedown', onDown, {passive: false});
+      document.addEventListener('mousemove', onMove, {passive: false});
+      document.addEventListener('mouseup', onUp);
+
+      element.addEventListener('touchstart', onDown, {passive: false});
+      document.addEventListener('touchmove', onMove, {passive: false});
+      document.addEventListener('touchend', onUp);
+    }
+  </script>
+</body>
+</html>
