@@ -1,1 +1,91 @@
-hola
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>¡Detectives de la Seguridad!</title>
+    <meta name="description" content="Juego interactivo para preescolar sobre la prevención de riesgos y accidentes.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Confetti library for celebrations -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Start Screen -->
+        <section id="start-screen" class="screen active">
+            <div class="glass-card">
+                <div class="logo-container">
+                    <span class="emoji-logo">🕵️‍♂️🛡️</span>
+                </div>
+                <h1>¡Detectives de la Seguridad!</h1>
+                <h2>Jardín de Niños Cuauhtémoc</h2>
+                <p>Aprende a identificar peligros y a cuidarte en la escuela y en casa.</p>
+                <button id="btn-start" class="btn-primary">
+                    ¡Jugar Ahora! <span class="icon">▶️</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Game Screen -->
+        <section id="game-screen" class="screen">
+            <div class="top-bar">
+                <div class="progress-container">
+                    <div id="progress-bar"></div>
+                </div>
+                <div class="stars-score">
+                    ⭐ <span id="score">0</span>
+                </div>
+            </div>
+
+            <div class="game-container">
+                <div id="question-card" class="glass-card question-card">
+                    <button id="btn-listen" class="btn-icon" aria-label="Escuchar indicación">
+                        🔊
+                    </button>
+                    <div id="emoji-display" class="emoji-display">🏃✂️</div>
+                    <h3 id="question-text">Correr con tijeras</h3>
+                </div>
+
+                <div class="options-container">
+                    <button class="btn-option btn-safe" data-type="seguro">
+                        <span class="emoji">✅</span>
+                        <span class="label">Seguro</span>
+                    </button>
+                    <button class="btn-option btn-danger" data-type="peligro">
+                        <span class="emoji">⚠️</span>
+                        <span class="label">Peligroso</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Feedback Overlay -->
+            <div id="feedback-overlay" class="feedback-overlay hidden">
+                <div class="feedback-content">
+                    <div id="feedback-emoji" class="feedback-emoji"></div>
+                    <h2 id="feedback-text"></h2>
+                </div>
+            </div>
+        </section>
+
+        <!-- End Screen -->
+        <section id="end-screen" class="screen">
+            <div class="glass-card">
+                <div class="logo-container">
+                    <span class="emoji-logo">🏆</span>
+                </div>
+                <h1>¡Felicidades!</h1>
+                <h2>Eres un experto en seguridad</h2>
+                <p>Has ayudado a que todos en el Jardín de Niños estén a salvo.</p>
+                <div class="final-score">
+                    ⭐ <span id="final-score-text">0</span> Estrellas
+                </div>
+                <button id="btn-restart" class="btn-primary">
+                    Jugar de Nuevo <span class="icon">🔄</span>
+                </button>
+            </div>
+        </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
